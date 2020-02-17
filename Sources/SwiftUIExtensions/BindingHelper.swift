@@ -5,7 +5,7 @@
 
 import SwiftUI
 
-@available(iOS 13.0, tvOS 13.0, macOS 10.15, *) public extension ObservedObject.Wrapper {
+public extension ObservedObject.Wrapper {
     func binding<Item>(for item: Item, in path: KeyPath<Self, Binding<Array<Item>>>) -> Binding<Item> where Item: Equatable {
         let boundlist = self[keyPath: path]
         let index = boundlist.wrappedValue.firstIndex(of: item)!
