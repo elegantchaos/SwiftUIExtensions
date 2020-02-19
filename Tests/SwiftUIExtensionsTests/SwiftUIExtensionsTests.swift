@@ -1,15 +1,42 @@
 import XCTest
+import SwiftUI
+
 @testable import SwiftUIExtensions
 
+class TestObject: ObservableObject {
+    @Published var items: [String]
+    @Published var property: String
+    
+    init(items: [String], property: String) {
+        self.items = items
+        self.property = property
+    }
+}
+
+struct TestView: View {
+    @ObservedObject var exampleObject: TestObject
+    
+    var body: some View {
+        Text("Hello")
+    }
+}
+
 final class SwiftUIExtensionsTests: XCTestCase {
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct
-        // results.
-        XCTAssertEqual(SwiftUIExtensions().text, "Hello, World!")
+    func testBindingForArrayProperty() {
+        let view = TestView(exampleObject: TestObject(items: ["Foo", "Bar"], property: "Baz"))
+        for item in view.exampleObject.items {
+            let binding = view.$exampleObject.binding(for: item, in: \.items)
+            XCTAssertTrue(binding.wrappedValue == item)
+        }
     }
 
-    static var allTests = [
-        ("testExample", testExample),
-    ]
+    func testBindingForArrayItem() {
+        let view = TestView(exampleObject: TestObject(items: ["Foo", "Bar"], property: "Baz"))
+        for item in view.exampleObject.items {
+            let binding = view.$exampleObject.binding(for: item, in: \.items)
+            XCTAssertTrue(binding.wrappedValue == item)
+        }
+    }
+
+    finc
 }
