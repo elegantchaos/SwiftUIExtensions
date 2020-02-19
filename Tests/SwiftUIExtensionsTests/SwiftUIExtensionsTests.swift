@@ -3,40 +3,50 @@ import SwiftUI
 
 @testable import SwiftUIExtensions
 
-class TestObject: ObservableObject {
-    @Published var items: [String]
-    @Published var property: String
+class TestItem: ObservableObject, Equatable {
+    @Published var value: String
     
-    init(items: [String], property: String) {
+    init(_ value: String) {
+        self.value = value
+    }
+
+    static func == (lhs: TestItem, rhs: TestItem) -> Bool {
+        return lhs.value == rhs.value
+    }
+    
+}
+
+class TestObject: ObservableObject {
+    @Published var items: [TestItem]
+    
+    init(items: [TestItem]) {
         self.items = items
-        self.property = property
     }
 }
 
-struct TestView: View {
-    @ObservedObject var exampleObject: TestObject
-    
-    var body: some View {
-        Text("Hello")
-    }
-}
 
 final class SwiftUIExtensionsTests: XCTestCase {
+    @ObservedObject var exampleObject: TestObject = TestObject(items: [TestItem("Foo"), TestItem("Bar")])
+    @State var exampleArray: [TestItem] = [TestItem("Foo"), TestItem("Bar")]
+    
     func testBindingForArrayProperty() {
-        let view = TestView(exampleObject: TestObject(items: ["Foo", "Bar"], property: "Baz"))
-        for item in view.exampleObject.items {
-            let binding = view.$exampleObject.binding(for: item, in: \.items)
+        for item in exampleObject.items {
+            let binding = $exampleObject.binding(for: item, in: \.items)
             XCTAssertTrue(binding.wrappedValue == item)
         }
     }
 
     func testBindingForArrayItem() {
-        let view = TestView(exampleObject: TestObject(items: ["Foo", "Bar"], property: "Baz"))
-        for item in view.exampleObject.items {
-            let binding = view.$exampleObject.binding(for: item, in: \.items)
+        for item in exampleArray {
+            let binding = $exampleArray.binding(for: item)
             XCTAssertTrue(binding.wrappedValue == item)
         }
     }
 
-    finc
+    func testBindingForPropertyOfArrayItem() {
+        for item in exampleArray {
+            let binding = $exampleArray.binding(for: \.value, of: item)
+            XCTAssertTrue(binding.wrappedValue == item.value)
+        }
+    }
 }
