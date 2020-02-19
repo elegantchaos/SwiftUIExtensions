@@ -22,7 +22,7 @@ public extension Binding {
         return binding
     }
 
-    func binding<ElementType, PropertyType>(for item: Value.Element, in path: KeyPath<Binding<ElementType>, Binding<PropertyType>>) -> Binding<PropertyType> where Value == Array<ElementType>, ElementType: Equatable {
+    func binding<ElementType, PropertyType>(for path: KeyPath<Binding<ElementType>, Binding<PropertyType>>, of item: ElementType) -> Binding<PropertyType> where Value == Array<ElementType>, ElementType: Equatable {
         let index = wrappedValue.firstIndex(of: item)!
         let element = self[index]
         let binding = element[keyPath: path]
