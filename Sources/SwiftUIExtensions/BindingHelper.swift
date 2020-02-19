@@ -12,4 +12,21 @@ public extension ObservedObject.Wrapper {
         let binding = (self[keyPath: path])[index]
         return binding
     }
+    
+}
+
+public extension Binding {
+    func binding<Item>(for item: Item) -> Binding<Item> where Value == Array<Item>, Item: Equatable {
+        let index = wrappedValue.firstIndex(of: item)!
+        let binding = self[index]
+        return binding
+    }
+
+    func binding<ElementType, PropertyType>(for item: Value.Element, in path: KeyPath<Binding<ElementType>, Binding<PropertyType>>) -> Binding<PropertyType> where Value == Array<ElementType>, ElementType: Equatable {
+        let index = wrappedValue.firstIndex(of: item)!
+        let element = self[index]
+        let binding = element[keyPath: path]
+        return binding
+    }
+
 }
