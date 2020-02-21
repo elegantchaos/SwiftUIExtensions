@@ -14,10 +14,14 @@ public extension View {
     
     #if os(tvOS)
     
-    public func onTapGestureShim(perform action: @escaping () -> Void) -> some View {
+    func onTapGestureShim(perform action: @escaping () -> Void) -> some View {
         return self
     }
     
+    func contextMenuShim<MenuItems>(@ViewBuilder menuItems: () -> MenuItems) -> some View where MenuItems : View {
+        return self
+    }
+
     #elseif canImport(UIKit)
     
     // MARK: iOS/tvOS
@@ -26,6 +30,10 @@ public extension View {
         return onTapGesture(perform: action)
     }
     
+    func contextMenuShim<MenuItems>(@ViewBuilder menuItems: () -> MenuItems) -> some View where MenuItems : View {
+        return contextMenu(menuItems: menuItems)
+    }
+
     #else // MARK: AppKit Overrides
 
     func onTapGestureShim(perform action: @escaping () -> Void) -> some View {
