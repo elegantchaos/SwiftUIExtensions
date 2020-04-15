@@ -16,7 +16,7 @@ public class SheetController: ObservableObject {
         isPresented = false
     }
     
-    func presented() -> AnyView {
+    var presented: AnyView {
         viewMaker?() ?? AnyView(EmptyView())
     }
     
@@ -33,10 +33,10 @@ public class SheetController: ObservableObject {
 
 public extension View {
     func sheet(controlledBy controller: Binding<SheetController>) -> some View {
-        self.sheet(isPresented: controller.isPresented) { controller.wrappedValue.presented() }
+        self.sheet(isPresented: controller.isPresented) { controller.wrappedValue.presented }
     }
 
     func sheet(controlledBy controller: EnvironmentObject<SheetController>) -> some View {
-        self.sheet(isPresented: controller.projectedValue.isPresented) { controller.wrappedValue.presented() }
+        self.sheet(isPresented: controller.projectedValue.isPresented) { controller.wrappedValue.presented }
     }
 }
