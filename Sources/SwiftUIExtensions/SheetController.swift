@@ -5,19 +5,41 @@
 
 import SwiftUI
 
+/// Utility class for controlling the presentation of sheets.
+///
+/// Your root content view should own one of these, or have one passed to it
+/// as a binding / in the environment.
+///
+/// You hook it up with `.sheet(controlledBy:)`.
+///
+/// E.g:
+///
+///    struct ContentView: View {
+///        @EnvironmentObject var sheetController: SheetController
+///
+///        var body: some View {
+///          VStack {
+///            Text("My Content Here)
+///          }.sheet(controlledBy: _sheetController)
+///        }
+///    }
+///
+/// To display a sheet, a child view calls `show()` on the controller,
+/// and passes a block which returns the view to show.
+///
+/// To dismiss the sheet, a child view calls `dimisss()` on the controller.
+
 public class SheetController: ObservableObject {
     public typealias ViewMaker = () -> AnyView
     
-    @Published public var isPresented: Bool
-    
-    var viewMaker: ViewMaker?
+    @Published fileprivate var isPresented: Bool
+    fileprivate var viewMaker: ViewMaker?
+    fileprivate var presented: AnyView {
+        viewMaker?() ?? AnyView(EmptyView())
+    }
 
     public init() {
         isPresented = false
-    }
-    
-    var presented: AnyView {
-        viewMaker?() ?? AnyView(EmptyView())
     }
     
     public func show(_ maker: @escaping ViewMaker) {
