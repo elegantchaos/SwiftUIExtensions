@@ -55,10 +55,19 @@ public class SheetController: ObservableObject {
 
 public extension View {
     func sheet(controlledBy controller: Binding<SheetController>) -> some View {
-        self.sheet(isPresented: controller.isPresented) { controller.wrappedValue.presented }
+        self.sheet(isPresented: controller.isPresented, onDismiss: {
+            controller.wrappedValue.dismiss()
+        }) { controller.wrappedValue.presented }
     }
 
-    func sheet(controlledBy controller: EnvironmentObject<SheetController>) -> some View {
-        self.sheet(isPresented: controller.projectedValue.isPresented) { controller.wrappedValue.presented }
+    func sheet(controlledBy controller: EnvironmentObject<SheetController>, keyController: KeyController? = nil) -> some View {
+        self.sheet(isPresented: controller.projectedValue.isPresented) { () -> AnyView in
+            let sheetView = controller.wrappedValue.presented
+            if let controller = keyController {
+                return AnyView(sheetView.environmentObject(controller))
+            } else {
+                return sheetView
+            }
+        }
     }
 }

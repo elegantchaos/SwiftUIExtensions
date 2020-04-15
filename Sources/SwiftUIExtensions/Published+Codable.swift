@@ -13,6 +13,7 @@ extension Published: Encodable where Value: Encodable {
         case cantGetPublishedValue
         case publishedValueNotEncodable
     }
+    
     public func encode(to encoder: Encoder) throws {
         guard let valueChild = Mirror(reflecting: self).children.first(where: { $0.label == "value" }) else {
             throw PublishedEncodingError.cantGetPublishedValue
