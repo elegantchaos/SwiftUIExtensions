@@ -28,14 +28,46 @@ import SwiftUI
 /// and passes a block which returns the view to show.
 ///
 /// To dismiss the sheet, a child view calls `dimisss()` on the controller.
+///
+/// ## Environment
+///
+/// It would be great if we could just grab the entire environment
+/// from the presenting view and apply it to the sheet view
+/// (or if it was just automatically inherited by the sheet view).
+///
+/// Sadly, right now this doesn't happen and there seems no way to do it.
+///
+/// You can apply environment values in the block you pass to `show()`.
+/// However, it's a pain for the hosting view which supplies that block
+/// to have to surface every important environment value just so that it
+/// can pass it to the sheet view.
+///
+/// To work round this, we have a `environmentSetter` property on the
+/// sheet controller, which is a block that applies environment settings to the
+/// sheet view. You can set this once when you create the sheet controller, and
+/// use it to apply global settings and objects.
+
 
 public class SheetController: ObservableObject {
     public typealias ViewMaker = () -> AnyView
-    
+    public typealias EnvironmentSetter = (AnyView) -> AnyView
+
     @Published fileprivate var isPresented: Bool
     fileprivate var viewMaker: ViewMaker?
-    fileprivate var presented: AnyView {
-        viewMaker?() ?? AnyView(EmptyView())
+    
+    /// Block which applies an environment to the sheet.
+    public var environmentSetter: EnvironmentSetter?
+    
+    fileprivate var presented: some View {
+        guard let view = viewMaker?() else {
+            return AnyView(EmptyView())
+        }
+        
+        if let setter = environmentSetter {
+            return setter(view)
+        } else {
+            return AnyView(view.environmentObject(self))
+        }
     }
 
     public init() {
@@ -61,13 +93,8 @@ public extension View {
     }
 
     func sheet(controlledBy controller: EnvironmentObject<SheetController>, keyController: KeyController? = nil) -> some View {
-        self.sheet(isPresented: controller.projectedValue.isPresented) { () -> AnyView in
-            let sheetView = controller.wrappedValue.presented
-            if let controller = keyController {
-                return AnyView(sheetView.environmentObject(controller))
-            } else {
-                return sheetView
-            }
+        self.sheet(isPresented: controller.projectedValue.isPresented) {
+            return controller.wrappedValue.presented
         }
     }
 }
