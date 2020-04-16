@@ -3,10 +3,7 @@
 //  All code (c) 2020 - present day, Elegant Chaos Limited.
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-#if canImport(AppKit)
-import AppKit
 import SwiftUI
-
 
 public class KeyController: ObservableObject {
     public typealias KeyTrigger = () -> Bool
@@ -29,7 +26,12 @@ public class KeyController: ObservableObject {
             return handled ? nil : event
         }
     }
+}
 
+#if canImport(AppKit)
+import AppKit
+
+public extension KeyController {
     func runTrigger(from table: [UInt16:KeyTrigger], with event: NSEvent) -> Bool {
         print(event.keyCode)
         guard let trigger = upTriggers[event.keyCode] else { return false }
@@ -45,4 +47,5 @@ public class KeyController: ObservableObject {
         return runTrigger(from: downTriggers, with: event)
     }
 }
+
 #endif
