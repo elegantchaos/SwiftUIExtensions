@@ -3,8 +3,10 @@
 //  All code (c) 2020 - present day, Elegant Chaos Limited.
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
+#if canImport(AppKit)
 import AppKit
 import SwiftUI
+
 
 public class KeyController: ObservableObject {
     public typealias KeyTrigger = () -> Bool
@@ -43,3 +45,4 @@ public class KeyController: ObservableObject {
         return runTrigger(from: downTriggers, with: event)
     }
 }
+#endif
