@@ -40,12 +40,14 @@ public class KeyController: ObservableObject {
     
     public struct Trigger {
         let code: UInt16?
+        let modifiers: UInt?
         let kind: Kind
         let callback: Callback
         
-        public init(code: UInt16? = nil, kind: Kind = .up, callback: @escaping Callback) {
+        public init(code: UInt16?, modifiers: UInt?, kind: Kind, callback: @escaping Callback) {
             self.code = code
             self.kind = kind
+            self.modifiers = modifiers
             self.callback = callback
         }
     }
@@ -64,20 +66,24 @@ public class KeyController: ObservableObject {
     
     internal var triggers: [Trigger] = []
     
-    public func register(code: UInt16? = nil, kind: Kind = .down, callback: @escaping Callback) {
-        triggers.append(Trigger(code: code, kind: kind, callback: callback))
+    public func register(code: UInt16? = nil, modifiers: UInt? = nil, kind: Kind = .down, callback: @escaping Callback) {
+        triggers.append(Trigger(code: code, modifiers: modifiers, kind: kind, callback: callback))
     }
 
-    func run(code: UInt16, kind: Kind) -> Bool {
+    func run(code: UInt16, modifiers: UInt, kind: Kind) -> Bool {
         assert(kind != .both)
 
-        print("\(code) \(kind)")
+        print("\(code) \(modifiers) \(kind)")
         
         for trigger in triggers.reversed() {
             if let codeToMatch = trigger.code, code != codeToMatch {
                 continue
             }
-            
+
+            if let modifiersToMatch = trigger.modifiers, modifiers != modifiersToMatch {
+                continue
+            }
+
             if trigger.kind != .both && trigger.kind != kind {
                 continue
             }
@@ -101,9 +107,9 @@ public extension KeyController {
             let handled: Bool
             switch event.type {
                 case .keyUp:
-                    handled = self.run(code: event.keyCode, kind: .up)
+                    handled = self.run(code: event.keyCode, modifiers: event.modifierFlags.rawValue, kind: .up)
                 case .keyDown:
-                    handled = self.run(code: event.keyCode, kind: .down)
+                    handled = self.run(code: event.keyCode, modifiers: event.modifierFlags.rawValue, kind: .down)
                 default:
                     handled = false
             }
