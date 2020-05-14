@@ -98,7 +98,7 @@ public class KeyController: ObservableObject {
 
 }
 
-#if canImport(AppKit)
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
 import AppKit
 
 public extension KeyController {

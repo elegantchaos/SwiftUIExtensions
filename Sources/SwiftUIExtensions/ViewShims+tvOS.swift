@@ -13,7 +13,7 @@ import SwiftUI
         return view
     }
 
-    public func contextMenuShim<MenuItems>(@ViewBuilder menuItems: () -> MenuItems) -> some View where MenuItems : View {
+    public func contextMenu<MenuItems>(@ViewBuilder menuItems: () -> MenuItems) -> some View where MenuItems : View {
         return view
     }
 }
