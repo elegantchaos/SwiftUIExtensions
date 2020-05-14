@@ -5,39 +5,20 @@
 
 import SwiftUI
 
-// Placeholders for methods that don't exist on some platforms.
+// The shim provides placeholders for methods that don't exist on some platforms.
 // These call on to the real methods when they exist, but do something
 // safe (or sometimes, nothing) when they don't.
+//
+// To use, make the normal call, but via the shim object.
+// For example, instead of `view.onTapGesture`, call `view.shim.onTapGesture`.
+// This will do the right thing on iOS, but nothing on tvOS.
 
 public extension View {
-    // MARK: tvOS
-    
     #if os(tvOS)
-    
-    func onTapGestureShim(perform action: @escaping () -> Void) -> some View {
-        return self
-    }
-    
-    func contextMenuShim<MenuItems>(@ViewBuilder menuItems: () -> MenuItems) -> some View where MenuItems : View {
-        return self
-    }
-
+    var shim: TVOSShim<Self> { TVOSShim(view: self) }
     #elseif canImport(UIKit)
-    
-    // MARK: iOS/tvOS
-    
-    func onTapGestureShim(perform action: @escaping () -> Void) -> some View {
-        return onTapGesture(perform: action)
-    }
-    
-    func contextMenuShim<MenuItems>(@ViewBuilder menuItems: () -> MenuItems) -> some View where MenuItems : View {
-        return contextMenu(menuItems: menuItems)
-    }
-
-    #else // MARK: AppKit Overrides
-
-    func onTapGestureShim(perform action: @escaping () -> Void) -> some View {
-        return self
-    }
+    var shim: UIKitShim<Self> { UIKitShim(view: self) }
+    #else
+    var shim: MacOSShim<Self> { MacOSShim(view: self) }
     #endif
 }
