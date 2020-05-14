@@ -17,6 +17,14 @@ public struct UIKitShim<Content> where Content: View {
     public func contextMenu<MenuItems>(menuItems: () -> MenuItems) -> some View where MenuItems : View {
         return view.contextMenu(menuItems: menuItems)
     }
+    
+
+}
+
+public extension View {
+    func bindEditing(to binding: Binding<Bool>) -> some View {
+        environment(\.editMode, .constant(binding.wrappedValue ? .active : .inactive))
+    }
 }
 
 #endif
