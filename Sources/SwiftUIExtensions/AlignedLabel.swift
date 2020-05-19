@@ -37,7 +37,7 @@ fileprivate struct WidthReader: View {
 /// to be as large as the largest label in the containing view.
 public struct Label: View {
     let name: String
-    let width: Binding<CGFloat?>
+    let width: Binding<CGFloat>
     let alignment: Alignment
     let font: Font
     let bold: Bool
@@ -47,10 +47,10 @@ public struct Label: View {
         let view = bold ? text.bold() : text
         return view.background(WidthReader())
             .lineLimit(1)
-            .frame(width: width.wrappedValue, alignment: alignment)
+            .frame(width: width.wrappedValue == 0 ? nil : width.wrappedValue, alignment: alignment)
     }
     
-    public init(_ name: String, width: Binding<CGFloat?>, alignment: Alignment = .trailing, font: Font = .body, bold: Bool = false) {
+    public init(_ name: String, width: Binding<CGFloat>, alignment: Alignment = .trailing, font: Font = .body, bold: Bool = false) {
         self.name = name
         self.width = width
         self.alignment = alignment
@@ -63,10 +63,10 @@ public extension View {
     /// Call this on the outer view containing all of the labels.
     /// - Parameter width: a @State variable defined on the containing view, used to store the maximum label width.
     /// - Returns: A view which automatically updates the binding when the label width preference is changed.
-    func alignLabels(width: Binding<CGFloat?>) -> some View {
+    func alignLabels(width: Binding<CGFloat>) -> some View {
         self.onPreferenceChange(LabelWidthPreferenceKey.self) { preferences in
             for p in preferences {
-                let oldWidth = width.wrappedValue ?? CGFloat.zero
+                let oldWidth = width.wrappedValue
                 if p > oldWidth {
                     width.wrappedValue = p
                 }
