@@ -41,19 +41,23 @@ public struct Label: View {
     let name: String
     let width: Binding<CGFloat?>
     let alignment: Alignment
+    let font: Font
+    let bold: Bool
+
     public var body: some View {
-        Text(name)
-            .font(.callout)
-            .bold()
-            .frame(width: width.wrappedValue, alignment: alignment)
+        let text = Text(name).font(font)
+        let view = bold ? text.bold() : text
+        return view.background(WidthReader())
             .lineLimit(1)
-            .background(WidthReader())
+            .frame(width: width.wrappedValue, alignment: alignment)
     }
     
-    public init(_ name: String, width: Binding<CGFloat?>, alignment: Alignment = .trailing) {
+    public init(_ name: String, width: Binding<CGFloat?>, alignment: Alignment = .trailing, font: Font = .body, bold: Bool = false) {
         self.name = name
         self.width = width
         self.alignment = alignment
+        self.font = font
+        self.bold = bold
     }
 }
 
