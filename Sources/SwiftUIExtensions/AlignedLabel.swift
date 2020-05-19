@@ -3,22 +3,20 @@
 //  All code (c) 2020 - present day, Elegant Chaos Limited.
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
+/**
+ Uses the geometry-reader & preferences method to align a bunch of labels
+ in a container.
+ */
+
 import SwiftUI
 
-/// Preference key which stores the widths of labels.
+/// Preference key which stores an array of label widths.
 fileprivate struct LabelWidthPreferenceKey: PreferenceKey {
-    public typealias Value = [LabelWidth]
-
-    public static var defaultValue: [LabelWidth] = []
-
-    public static func reduce(value: inout [LabelWidth], nextValue: () -> [LabelWidth]) {
+    public typealias Value = [CGFloat]
+    public static var defaultValue: [CGFloat] = []
+    public static func reduce(value: inout [CGFloat], nextValue: () -> [CGFloat]) {
         value.append(contentsOf: nextValue())
     }
-}
-
-/// The width of an individual label
-fileprivate struct LabelWidth: Equatable {
-    let width: CGFloat
 }
 
 /// View which captures its own width and stores it in a preference.
@@ -29,7 +27,7 @@ fileprivate struct WidthReader: View {
                 .fill(Color.clear)
                 .preference(
                     key: LabelWidthPreferenceKey.self,
-                    value: [LabelWidth(width: geometry.frame(in: CoordinateSpace.global).width)]
+                    value: [geometry.frame(in: CoordinateSpace.global).width]
                 )
         }
     }
@@ -69,8 +67,8 @@ public extension View {
         self.onPreferenceChange(LabelWidthPreferenceKey.self) { preferences in
             for p in preferences {
                 let oldWidth = width.wrappedValue ?? CGFloat.zero
-                if p.width > oldWidth {
-                    width.wrappedValue = p.width
+                if p > oldWidth {
+                    width.wrappedValue = p
                 }
             }
         }
