@@ -74,8 +74,8 @@ public class SheetController: ObservableObject {
         isPresented = false
     }
     
-    public func show(_ maker: @escaping ViewMaker) {
-        viewMaker = maker
+    public func show<Content>(_ maker: @escaping () -> Content) where Content: View {
+        viewMaker = { AnyView(maker()) }
         isPresented = true
     }
     
