@@ -45,9 +45,10 @@ public struct Label: View {
     public var body: some View {
         let text = Text(name).font(font)
         let view = bold ? text.bold() : text
+        let width = self.width.wrappedValue
         return view.background(WidthReader())
             .lineLimit(1)
-            .frame(width: width.wrappedValue == 0 ? nil : width.wrappedValue, alignment: alignment)
+            .frame(width: width == 0 ? nil : width, alignment: alignment)
     }
     
     public init(_ name: String, width: Binding<CGFloat>, alignment: Alignment = .trailing, font: Font = .body, bold: Bool = false) {
@@ -65,12 +66,13 @@ public extension View {
     /// - Returns: A view which automatically updates the binding when the label width preference is changed.
     func alignLabels(width: Binding<CGFloat>) -> some View {
         self.onPreferenceChange(LabelWidthPreferenceKey.self) { preferences in
+            var max = width.wrappedValue
             for p in preferences {
-                let oldWidth = width.wrappedValue
-                if p > oldWidth {
-                    width.wrappedValue = p
+                if p > max {
+                    max = p
                 }
             }
+            width.wrappedValue = max
         }
     }
 }
