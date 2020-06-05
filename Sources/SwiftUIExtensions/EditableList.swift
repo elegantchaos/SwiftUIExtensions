@@ -40,12 +40,13 @@ public struct EditableRowView<ContentView, Model>: View where ContentView: View,
     }
 }
 
-public struct EditButton: View where Content: View {
-    @State var editing: Bool = false
+public struct EditButton<Content>: View where Content: View {
+    @Binding var editing: Bool
     @Environment(\.editModeShim) var editMode
     let content: () -> Content
     
-    public init(content: @escaping () -> Content) {
+    public init(editing: Binding<Bool>, content: @escaping () -> Content) {
+        self._editing = editing
         self.content = content
     }
     
@@ -53,8 +54,8 @@ public struct EditButton: View where Content: View {
         Button(action: {
             self.editing = !self.editing
         }) {
-            content()
-        }.bindEditing(to: $editing)
+            content().bindEditing(to: $editing)
+        }
     }
 }
 
