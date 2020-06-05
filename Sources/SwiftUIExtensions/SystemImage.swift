@@ -41,4 +41,11 @@ public extension SystemImage.Name {
     static var rowHandle: Self { return "NSListViewTemplate" }
 }
 
+#else
+
+public extension SystemImage.Name {
+    static var rowDelete: Self { return "minus.circle.fill" }
+    static var rowHandle: Self { return "line.horizontal.3" }
+}
+
 #endif
