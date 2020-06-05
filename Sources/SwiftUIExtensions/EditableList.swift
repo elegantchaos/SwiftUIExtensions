@@ -78,7 +78,7 @@ public struct EditButton<Content>: View where Content: View {
     }
 }
 
-public struct WrappedForEach<ID, Content, Model>: View where ID == Model.Item.ID, Content : View, Model: EditableModel, Model.Items.Element == Model.Item {
+public struct EditableList<ID, Content, Model>: View where ID == Model.Item.ID, Content : View, Model: EditableModel, Model.Items.Element == Model.Item {
     @EnvironmentObject var editContext: EditContext
     let model: Model
     let content: (Model.Item) -> Content
@@ -88,34 +88,6 @@ public struct WrappedForEach<ID, Content, Model>: View where ID == Model.Item.ID
         self.model = model
     }
 
-    public var body: some View {
-        ForEach(model.items) { item in
-            HStack {
-                if self.editContext.editing {
-                    SystemImage(.rowHandle)
-                    Button(action: { self.model.delete(item: item) })  {
-                        SystemImage(.rowDelete)
-                            .foregroundColor(Color.red)
-                    }.buttonStyle(BorderlessButtonStyle())
-                }
-                
-                self.content(item)
-            }
-        }
-            .onDelete(perform: { at in self.model.delete(at: at) })
-            .onMove(perform: editContext.editing ? { from, to in self.model.move(from: from, to: to)} : nil)
-    }
-}
-
-public struct EditingForEach<Model, Row>: View where Model: EditableModel, Row: View, Model.Item == Model.Items.Element {
-    @EnvironmentObject var editContext: EditContext
-    @EnvironmentObject var model: Model
-    let content: (Model.Item) -> Row
-    
-    public init(@ViewBuilder content: @escaping (Model.Item) -> Row) {
-        self.content = content
-    }
-    
     public var body: some View {
         List {
             ForEach(model.items) { item in
@@ -131,16 +103,9 @@ public struct EditingForEach<Model, Row>: View where Model: EditableModel, Row: 
                     self.content(item)
                 }
             }
-            .onDelete(perform: { at in self.model.delete(at: at) })
-            .onMove(perform: editContext.editing ? { from, to in self.model.move(from: from, to: to)} : nil)
+                .onDelete(perform: { at in self.model.delete(at: at) })
+                .onMove(perform: editContext.editing ? { from, to in self.model.move(from: from, to: to)} : nil)
         }
     }
 }
 
-public extension ForEach {
-    func bindEditableList<Model>(to binding: Binding<Bool>, model: Model) -> some View where Model: EditableModel, Content: View {
-        self
-            .onDelete(perform: { at in model.delete(at: at) })
-            .onMove(perform: binding.wrappedValue ? { from, to in model.move(from: from, to: to)} : nil)
-    }
-}
