@@ -80,12 +80,11 @@ public struct EditButton<Content>: View where Content: View {
 
 public struct EditableList<ID, Content, Model>: View where ID == Model.Item.ID, Content : View, Model: EditableModel, Model.Items.Element == Model.Item {
     @EnvironmentObject var editContext: EditContext
-    let model: Model
+    @EnvironmentObject var model: Model
     let content: (Model.Item, Model) -> Content
     
-    public init(model: Model, @ViewBuilder content: @escaping (Model.Item, Model) -> Content) {
+    public init(@ViewBuilder content: @escaping (Model.Item, Model) -> Content) {
         self.content = content
-        self.model = model
     }
 
     public var body: some View {
