@@ -9,6 +9,7 @@ public protocol EditableModel {
     associatedtype Item
     func delete(item: Item)
     func delete(at offsets: IndexSet)
+    func move(from: IndexSet, to: Int)
 }
 
 public struct EditableRowView<ContentView, Model>: View where ContentView: View, Model: EditableModel {
@@ -36,5 +37,32 @@ public struct EditableRowView<ContentView, Model>: View where ContentView: View,
             
             content()
         }
+    }
+}
+
+public struct EditButton: View where Content: View {
+    @State var editing: Bool = false
+    @Environment(\.editModeShim) var editMode
+    let content: () -> Content
+    
+    public init(content: @escaping () -> Content) {
+        self.content = content
+    }
+    
+    public var body: some View {
+        Button(action: {
+            self.editing = !self.editing
+        }) {
+            content()
+        }.bindEditing(to: $editing)
+    }
+}
+
+public extension ForEach {
+    func bindEditableList<Model>(to binding: Binding<Bool>, model: Model) -> some View where Model: EditableModel, Content: View {
+        self
+            .onDelete(perform: { at in model.delete(at: at) })
+            .onMove(perform: binding.wrappedValue ? { from, to in model.move(from: from, to: to)} : nil)
+            .bindEditing(to: binding)
     }
 }
