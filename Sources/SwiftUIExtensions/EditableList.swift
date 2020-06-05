@@ -81,9 +81,9 @@ public struct EditButton<Content>: View where Content: View {
 public struct EditableList<ID, Content, Model>: View where ID == Model.Item.ID, Content : View, Model: EditableModel, Model.Items.Element == Model.Item {
     @EnvironmentObject var editContext: EditContext
     let model: Model
-    let content: (Model.Item) -> Content
+    let content: (Model.Item, Model) -> Content
     
-    public init(model: Model, @ViewBuilder content: @escaping (Model.Item) -> Content) {
+    public init(model: Model, @ViewBuilder content: @escaping (Model.Item, Model) -> Content) {
         self.content = content
         self.model = model
     }
@@ -100,7 +100,7 @@ public struct EditableList<ID, Content, Model>: View where ID == Model.Item.ID, 
                         }.buttonStyle(BorderlessButtonStyle())
                     }
                     
-                    self.content(item)
+                    self.content(item, self.model)
                 }
             }
                 .onDelete(perform: { at in self.model.delete(at: at) })
