@@ -21,6 +21,16 @@ public struct UIKitShim<Content> where Content: View {
 
 }
 
+public typealias EditModeShim = EditMode
+
+public extension EnvironmentValues {
+    var editModeShim: Binding<EditModeShim>? {
+        get { self.editMode }
+        set { self.editMode = newValue }
+    }
+}
+
+
 public extension View {
     func bindEditing(to binding: Binding<Bool>) -> some View {
         environment(\.editMode, .constant(binding.wrappedValue ? .active : .inactive))

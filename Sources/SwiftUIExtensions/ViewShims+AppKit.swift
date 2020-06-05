@@ -21,11 +21,11 @@ import SwiftUI
 
 
 public struct EditModeShimKey: EnvironmentKey {
-    public static var defaultValue: EditModeShim { .inactive }
+    public static var defaultValue: Binding<EditModeShim>? { nil }
 }
 
 public extension EnvironmentValues {
-    var editModeShim: EditModeShim {
+    var editModeShim: Binding<EditModeShim>? {
         get { return self[EditModeShimKey.self] }
         set { self[EditModeShimKey.self] = newValue }
     }
@@ -34,12 +34,9 @@ public extension EnvironmentValues {
 public extension View {
     func bindEditing(to binding: Binding<Bool>) -> some View {
         let value: EditModeShim = binding.wrappedValue ? .active : .inactive
-        return environment(\.editModeShim, value)
+        return environment(\.editModeShim, .constant(value))
     }
 }
-
-#endif
-
 
 public enum EditModeShim: Equatable, Hashable {
 
@@ -57,5 +54,12 @@ public enum EditModeShim: Equatable, Hashable {
     case active
 
     /// Indicates whether a view is being edited.
-    public var isEditing: Bool { self == .active }
+    public var isEditing: Bool {
+        switch self {
+            case .active: return true
+            default: return false
+        }
+    }
 }
+
+#endif

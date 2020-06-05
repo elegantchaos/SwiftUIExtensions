@@ -15,7 +15,7 @@ public struct EditableRowView<ContentView, Model>: View where ContentView: View,
     let item: Model.Item
     let model: Model
     let content: () -> ContentView
-    @Environment(\.editModeShim) var editMode: EditModeShim
+    @Environment(\.editModeShim) var editMode
     
     public init(item: Model.Item, model: Model, content: @escaping () -> ContentView) {
         self.item = item
@@ -24,8 +24,9 @@ public struct EditableRowView<ContentView, Model>: View where ContentView: View,
     }
     
     public var body: some View {
-        HStack {
-            if self.editMode.isEditing {
+        let editing: Bool = editMode?.wrappedValue == .active
+        return HStack {
+            if editing {
                 SystemImage(.rowHandle)
                 Button(action: { self.model.delete(item: self.item) })  {
                     SystemImage(.rowDelete)
