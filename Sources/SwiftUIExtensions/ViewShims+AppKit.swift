@@ -17,6 +17,45 @@ import SwiftUI
         return view
     }
 }
+
+
+
+public struct EditModeShimKey: EnvironmentKey {
+    public static var defaultValue: EditModeShim { .inactive }
+}
+
+public extension EnvironmentValues {
+    var editModeShim: EditModeShim {
+        get { return self[EditModeShimKey.self] }
+        set { self[EditModeShimKey.self] = newValue }
+    }
+}
+
+public extension View {
+    func bindEditing(to binding: Binding<Bool>) -> some View {
+        let value: EditModeShim = binding.wrappedValue ? .active : .inactive
+        return environment(\.editModeShim, value)
+    }
+}
+
 #endif
 
 
+public enum EditModeShim: Equatable, Hashable {
+
+    /// The view content cannot be edited.
+    case inactive
+
+    /// The view is in a temporary edit mode.
+    ///
+    /// The definition of temporary might vary by platform or specific control.
+    /// As an example, temporary edit mode may be engaged over the duration of
+    /// a swipe gesture.
+    case transient
+
+    /// The view content can be edited.
+    case active
+
+    /// Indicates whether a view is being edited.
+    public var isEditing: Bool { self == .active }
+}
