@@ -11,10 +11,10 @@ public class EditContext: ObservableObject {
 
 
 public protocol EditableModel: ObservableObject {
-    associatedtype EditableItem: Identifiable
-    typealias Items = [EditableItem]
-    var items: [EditableItem] { get }
-    func delete(item: EditableItem)
+    associatedtype Item: Identifiable
+    associatedtype Items: RandomAccessCollection
+    var items: Items { get }
+    func delete(item: Item)
     func delete(at offsets: IndexSet)
     func move(from: IndexSet, to: Int)
 }
@@ -36,12 +36,12 @@ public struct EditingView<Content>: View where Content: View {
 }
 
 public struct EditableRowView<Model, Content>: View where Content: View, Model: EditableModel {
-    let item: Model.EditableItem
+    let item: Model.Item
     let content: () -> Content
     @EnvironmentObject var editContext: EditContext
     @EnvironmentObject var model: Model
 
-    public init(item: Model.EditableItem, model: Model, @ViewBuilder content: @escaping () -> Content) {
+    public init(item: Model.Item, model: Model, @ViewBuilder content: @escaping () -> Content) {
         self.item = item
         self.content = content
     }
@@ -78,31 +78,29 @@ public struct EditButton<Content>: View where Content: View {
     }
 }
 
-public struct WrappedForEach<Data, ID, Content, Model>: View where Data : RandomAccessCollection, ID == Data.Element.ID, Content : View, Data.Element : Identifiable, Model: EditableModel {
+public struct WrappedForEach<ID, Content, Model>: View where ID == Model.Item.ID, Content : View, Model: EditableModel, Model.Items.Element == Model.Item {
     @EnvironmentObject var editContext: EditContext
-    let data: Data
     let model: Model
-    let content: (Data.Element) -> Content
+    let content: (Model.Item) -> Content
     
-    public init(_ data: Data, model: Model, @ViewBuilder content: @escaping (Data.Element) -> Content) {
-        self.data = data
+    public init(model: Model, @ViewBuilder content: @escaping (Model.Item) -> Content) {
         self.content = content
         self.model = model
     }
 
     public var body: some View {
-        ForEach<Data, ID, Content>(data, content: content)
+        ForEach<Model.Items, ID, Content>(model.items, content: content)
             .onDelete(perform: { at in self.model.delete(at: at) })
             .onMove(perform: editContext.editing ? { from, to in self.model.move(from: from, to: to)} : nil)
     }
 }
 
-public struct EditingForEach<Model, Row>: View where Model: EditableModel, Row: View {
+public struct EditingForEach<Model, Row>: View where Model: EditableModel, Row: View, Model.Item == Model.Items.Element {
     @EnvironmentObject var editContext: EditContext
     @EnvironmentObject var model: Model
-    let content: (Model.EditableItem) -> Row
+    let content: (Model.Item) -> Row
     
-    public init(@ViewBuilder content: @escaping (Model.EditableItem) -> Row) {
+    public init(@ViewBuilder content: @escaping (Model.Item) -> Row) {
         self.content = content
     }
     
