@@ -89,7 +89,19 @@ public struct WrappedForEach<ID, Content, Model>: View where ID == Model.Item.ID
     }
 
     public var body: some View {
-        ForEach<Model.Items, ID, Content>(model.items, content: content)
+        ForEach(model.items) { item in
+            HStack {
+                if self.editContext.editing {
+                    SystemImage(.rowHandle)
+                    Button(action: { self.model.delete(item: item) })  {
+                        SystemImage(.rowDelete)
+                            .foregroundColor(Color.red)
+                    }.buttonStyle(BorderlessButtonStyle())
+                }
+                
+                self.content(item)
+            }
+        }
             .onDelete(perform: { at in self.model.delete(at: at) })
             .onMove(perform: editContext.editing ? { from, to in self.model.move(from: from, to: to)} : nil)
     }
