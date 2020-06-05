@@ -11,10 +11,9 @@ public class EditContext: ObservableObject {
 
 
 public protocol EditableModel: ObservableObject {
-    associatedtype Item: Identifiable
     associatedtype Items: RandomAccessCollection
     var items: Items { get }
-    func delete(item: Item)
+    func delete(item: Items.Element)
     func delete(at offsets: IndexSet)
     func move(from: IndexSet, to: Int)
 }
@@ -36,12 +35,12 @@ public struct EditingView<Content>: View where Content: View {
 }
 
 public struct EditableRowView<Model, Content>: View where Content: View, Model: EditableModel {
-    let item: Model.Item
+    let item: Model.Items.Element
     let content: () -> Content
     @EnvironmentObject var editContext: EditContext
     @EnvironmentObject var model: Model
 
-    public init(item: Model.Item, model: Model, @ViewBuilder content: @escaping () -> Content) {
+    public init(item: Model.Items.Element, model: Model, @ViewBuilder content: @escaping () -> Content) {
         self.item = item
         self.content = content
     }
@@ -78,12 +77,12 @@ public struct EditButton<Content>: View where Content: View {
     }
 }
 
-public struct EditableList<ID, Content, Model>: View where ID == Model.Item.ID, Content : View, Model: EditableModel, Model.Items.Element == Model.Item {
+public struct EditableList<ID, Content, Model>: View where ID == Model.Items.Element.ID, Content : View, Model: EditableModel, Model.Items.Element: Identifiable {
     @EnvironmentObject var editContext: EditContext
     @EnvironmentObject var model: Model
-    let content: (Model.Item, Model) -> Content
+    let content: (Model.Items.Element, Model) -> Content
     
-    public init(@ViewBuilder content: @escaping (Model.Item, Model) -> Content) {
+    public init(@ViewBuilder content: @escaping (Model.Items.Element, Model) -> Content) {
         self.content = content
     }
 
