@@ -10,12 +10,13 @@ public class EditContext: ObservableObject {
 }
 
 
-public protocol EditableModel: ObservableObject {
+public protocol EditableModel: ObservableObject where Items.Element: Identifiable {
     associatedtype Items: RandomAccessCollection
     var items: Items { get }
     func delete(item: Items.Element)
     func delete(at offsets: IndexSet)
     func move(from: IndexSet, to: Int)
+    var selection: Set<Items.Element.ID> { get set }
 }
 
 public struct EditingView<Content>: View where Content: View {
@@ -77,7 +78,7 @@ public struct EditButton<Content>: View where Content: View {
     }
 }
 
-public struct EditableList<ID, Content, Model>: View where ID == Model.Items.Element.ID, Content : View, Model: EditableModel, Model.Items.Element: Identifiable {
+public struct EditableList<ID, Content, Model>: View where ID == Model.Items.Element.ID, Content : View, Model: EditableModel {
     @EnvironmentObject var editContext: EditContext
     @EnvironmentObject var model: Model
     let content: (Model.Items.Element, Model) -> Content
@@ -87,7 +88,7 @@ public struct EditableList<ID, Content, Model>: View where ID == Model.Items.Ele
     }
 
     public var body: some View {
-        List {
+        List(selection: self.$model.selection) {
             ForEach(model.items) { item in
                 HStack {
                     if self.editContext.editing {
