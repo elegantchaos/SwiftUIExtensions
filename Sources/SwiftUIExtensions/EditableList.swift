@@ -7,6 +7,8 @@ import SwiftUI
 
 public class EditContext: ObservableObject {
     @Published var editing: Bool = false
+    @Published var debugging: Bool = false
+    @Published var selection: Set<UUID> = []
 }
 
 
@@ -16,15 +18,15 @@ public protocol EditableModel: ObservableObject where Items.Element: Identifiabl
     func delete(item: Items.Element)
     func delete(at offsets: IndexSet)
     func move(from: IndexSet, to: Int)
-    var selection: Set<Items.Element.ID> { get set }
 }
 
 public struct EditingView<Content>: View where Content: View {
     @State var editContext = EditContext()
     let content: () -> Content
     
-    public init(@ViewBuilder content: @escaping () -> Content) {
+    public init(debugging: Bool = false, @ViewBuilder content: @escaping () -> Content) {
         self.content = content
+        self.editContext.debugging = debugging
     }
     
     public var body: some View {
@@ -88,7 +90,11 @@ public struct EditableList<ID, Content, Model>: View where ID == Model.Items.Ele
     }
 
     public var body: some View {
-        List(selection: self.$model.selection) {
+        List(selection: self.$editContext.selection) {
+            if editContext.debugging {
+                Text(editContext.selection.map({ $0.uuidString }).joined(separator: ","))
+            }
+            
             ForEach(model.items) { item in
                 HStack {
                     if self.editContext.editing {
