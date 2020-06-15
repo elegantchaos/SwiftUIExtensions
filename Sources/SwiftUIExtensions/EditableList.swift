@@ -5,12 +5,17 @@
 
 import SwiftUI
 
+// TODO: EditContext should really be paramterised with the Identifiable type, rather than hard-coding UUID.
+//          This would complicate things a bit for things like EditButton which would need to know the exact type
+//          of the EditContext. That could be avoided by splitting the context into two objects - one containing
+//          just the untyped things like the edititing state, and the other containing the typed things such as
+//          the selection.
+
 public class EditContext: ObservableObject {
     @Published var editing: Bool = false
     @Published var debugging: Bool = false
     @Published var selection: Set<UUID> = []
 }
-
 
 public protocol EditableModel: ObservableObject where Items.Element: Identifiable {
     associatedtype Items: RandomAccessCollection
