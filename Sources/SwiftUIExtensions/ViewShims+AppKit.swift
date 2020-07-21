@@ -22,23 +22,14 @@ public struct MacOSShim<Content> where Content: View {
     }
     
     public func textContentType(_ textContentType: UITextContentTypeShim) -> some View {
-        return Group {
-            if #available(macOS 11.0, *) {
-                switch textContentType {
-                case .name: view.textContentType(.name)
-                }
-                
-            } else {
-                view
+        if #available(macOS 11.0, *) {
+            switch textContentType {
+            case .name: return AnyView(view.textContentType(.name))
             }
+            
+        } else {
+            return AnyView(view)
         }
-    }
-    
-}
-
-public extension NSTextContentType {
-    static var nameShim: NSTextContentType {
-        .init(rawValue: "name")
     }
 }
 
