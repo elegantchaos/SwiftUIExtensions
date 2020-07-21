@@ -24,7 +24,7 @@ public struct MacOSShim<Content> where Content: View {
     public func textContentType(_ textContentType: UITextContentTypeShim) -> some View {
         if #available(macOS 11.0, *) {
             switch textContentType {
-            case .name: return AnyView(view.textContentType(.name))
+            case .name: return AnyView(view.textContentType(.username))
             }
             
         } else {
@@ -52,11 +52,6 @@ public extension View {
     }
     
     
-}
-
-extension NSTextContentType {
-    @available(OSX 11.0, *) public static var name: NSTextContentType { .username }
-    @available(OSX 11.0, *) public static var alphabet: NSTextContentType { .init(rawValue: "") }
 }
 
 public struct EditModeShimKey: EnvironmentKey {
