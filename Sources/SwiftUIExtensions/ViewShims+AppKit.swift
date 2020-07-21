@@ -19,14 +19,17 @@ public struct MacOSShim<Content> where Content: View {
     
     public enum UITextContentTypeShim {
         case name
+        
+        @available(macOS 11.0, *) func applied<V>(to view: V) -> AnyView where V: View {
+            switch self {
+            case .name: return AnyView(view.textContentType(.username))
+            }
+        }
     }
     
     public func textContentType(_ textContentType: UITextContentTypeShim) -> some View {
         if #available(macOS 11.0, *) {
-            switch textContentType {
-            case .name: return AnyView(view.textContentType(.username))
-            }
-            
+            return textContentType.applied(to: view)
         } else {
             return AnyView(view)
         }
