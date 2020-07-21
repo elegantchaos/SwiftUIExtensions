@@ -6,38 +6,34 @@
 import SwiftUI
 
 #if os(macOS)
-    public struct MacOSShim<Content> where Content: View {
+public struct MacOSShim<Content> where Content: View {
     let view: Content
-
+    
     public func onTapGesture(perform action: @escaping () -> Void) -> some View {
         return view
     }
-
+    
     public func contextMenu<MenuItems>(@ViewBuilder menuItems: () -> MenuItems) -> some View where MenuItems : View {
         return view
     }
-        
-        public struct UITextContentTypeShim {
-            let wrapped: NSTextContentType?
-            public static var name: UITextContentTypeShim {
-                if #available(macOS 11.0, *) {
-                    return UITextContentTypeShim(wrapped: NSTextContentType.name)
-                } else {
-                    return UITextContentTypeShim(wrapped: NSTextContentType(rawValue: "name"))
+    
+    public enum UITextContentTypeShim {
+        case name
+    }
+    
+    public func textContentType(_ textContentType: UITextContentTypeShim) -> some View {
+        return Group {
+            if #available(macOS 11.0, *) {
+                switch textContentType {
+                case .name: view.textContentType(.name)
                 }
+                
+            } else {
+                view
             }
         }
-        
-        public func textContentType(_ textContentType: UITextContentTypeShim) -> some View {
-            return Group {
-                if #available(macOS 11.0, *) {
-                    view.textContentType(textContentType.wrapped)
-                } else {
-                    view
-                }
-            }
-        }
-
+    }
+    
 }
 
 public extension NSTextContentType {
@@ -91,25 +87,25 @@ public extension View {
 }
 
 public enum EditModeShim: Equatable, Hashable {
-
+    
     /// The view content cannot be edited.
     case inactive
-
+    
     /// The view is in a temporary edit mode.
     ///
     /// The definition of temporary might vary by platform or specific control.
     /// As an example, temporary edit mode may be engaged over the duration of
     /// a swipe gesture.
     case transient
-
+    
     /// The view content can be edited.
     case active
-
+    
     /// Indicates whether a view is being edited.
     public var isEditing: Bool {
         switch self {
-            case .active: return true
-            default: return false
+        case .active: return true
+        default: return false
         }
     }
 }
