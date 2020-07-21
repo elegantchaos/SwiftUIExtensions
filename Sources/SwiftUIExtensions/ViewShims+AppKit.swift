@@ -5,7 +5,7 @@
 
 import SwiftUI
 
-#if os(macOS)
+#if os(macOS) && !canImport(UIKit)
 public struct MacOSShim<Content> where Content: View {
     let view: Content
     
@@ -19,17 +19,17 @@ public struct MacOSShim<Content> where Content: View {
     
     public enum UITextContentTypeShim {
         case name
-        
-        @available(macOS 11.0, *) func applied<V>(to view: V) -> AnyView where V: View {
-            switch self {
-            case .name: return AnyView(view.textContentType(.username))
-            }
+    }
+
+    @available(macOS 11.0, *) func applyTextContent(for type: UITextContentTypeShim) -> AnyView {
+        switch type {
+        case .name: return AnyView(view.textContentType(.username))
         }
     }
-    
+
     public func textContentType(_ textContentType: UITextContentTypeShim) -> some View {
         if #available(macOS 11.0, *) {
-            return textContentType.applied(to: view)
+            return applyTextContent(for: textContentType)
         } else {
             return AnyView(view)
         }
