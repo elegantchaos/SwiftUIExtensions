@@ -16,9 +16,61 @@ import SwiftUI
     public func contextMenu<MenuItems>(@ViewBuilder menuItems: () -> MenuItems) -> some View where MenuItems : View {
         return view
     }
+        
+        public struct UITextContentTypeShim {
+            let wrapped: NSTextContentType?
+            public static var name: UITextContentTypeShim {
+                if #available(macOS 11.0, *) {
+                    return UITextContentTypeShim(wrapped: NSTextContentType.name)
+                } else {
+                    return UITextContentTypeShim(wrapped: NSTextContentType(rawValue: "name"))
+                }
+            }
+        }
+        
+        public func textContentType(_ textContentType: UITextContentTypeShim) -> some View {
+            return Group {
+                if #available(macOS 11.0, *) {
+                    view.textContentType(textContentType.wrapped)
+                } else {
+                    view
+                }
+            }
+        }
+
 }
 
+public extension NSTextContentType {
+    static var nameShim: NSTextContentType {
+        .init(rawValue: "name")
+    }
+}
 
+public enum KeyboardTypeShim {
+    case namePhonePad
+    case alphabet
+}
+
+public enum AutocapitalizationTypeShim {
+    case none
+}
+
+public extension View {
+    func keyboardType(_ type: KeyboardTypeShim) -> some View {
+        return self
+    }
+    
+    func autocapitalization(_ type: AutocapitalizationTypeShim) -> some View {
+        return self
+    }
+    
+    
+}
+
+extension NSTextContentType {
+    @available(OSX 11.0, *) public static var name: NSTextContentType { .username }
+    @available(OSX 11.0, *) public static var alphabet: NSTextContentType { .init(rawValue: "") }
+}
 
 public struct EditModeShimKey: EnvironmentKey {
     public static var defaultValue: Binding<EditModeShim>? { nil }

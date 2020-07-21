@@ -18,6 +18,9 @@ public struct UIKitShim<Content> where Content: View {
         return view.contextMenu(menuItems: menuItems)
     }
     
+    public func textContentType(_ textContentType: UITextContentType?) -> some View {
+            view.textContentType(textContentType)
+    }
 
 }
 

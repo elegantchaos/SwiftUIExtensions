@@ -8,17 +8,7 @@ import SwiftUI
 /// Abstraction for system images which can load them in a different way on the Mac.
 
 public struct SystemImage: View {
-    public struct Name: ExpressibleByStringLiteral, RawRepresentable {
-        public typealias StringLiteralType = String
-        public let rawValue: String
-        public init(rawValue value: String) {
-            rawValue = value
-        }
-        public init(stringLiteral value: String) {
-            rawValue = value
-        }
-    }
-
+    public typealias Name = String
     let name: Name
     
     public init(_ name: Name) {
@@ -26,26 +16,26 @@ public struct SystemImage: View {
     }
     
     public var body: some View {
-        #if os(macOS)
-        return Image(nsImage: NSImage(named: name.rawValue)!)
+        #if canImport(UIKit)
+        return Image(systemName: name)
         #else
-        return Image(systemName: name.rawValue)
+        return Image(nsImage: NSImage(named: name)!)
         #endif
     }
 }
 
-#if os(macOS)
-
-public extension SystemImage.Name {
-    static var rowDelete: Self { return "NSStopProgressFreestandingTemplate" }
-    static var rowHandle: Self { return "NSListViewTemplate" }
-}
-
-#else
+#if canImport(UIKit)
 
 public extension SystemImage.Name {
     static var rowDelete: Self { return "minus.circle.fill" }
     static var rowHandle: Self { return "line.horizontal.3" }
 }
+
+#else
+public extension SystemImage.Name {
+    static var rowDelete: Self { return "NSStopProgressFreestandingTemplate" }
+    static var rowHandle: Self { return "NSListViewTemplate" }
+}
+
 
 #endif
