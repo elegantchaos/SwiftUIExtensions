@@ -21,18 +21,14 @@ public struct MacOSShim<Content> where Content: View {
         case name
     }
 
-    @available(macOS 11.0, *) func applyTextContent(for type: UITextContentTypeShim) -> AnyView {
-        switch type {
-        case .name: return AnyView(view.textContentType(.username))
-        }
-    }
-
     public func textContentType(_ textContentType: UITextContentTypeShim) -> some View {
-        if #available(macOS 11.0, *) {
-            return applyTextContent(for: textContentType)
-        } else {
-            return AnyView(view)
+        #if swift(>=5.3) // HACK: workaround to check for the macOS 11 SDK, which implements textContentType
+        switch textContentType {
+            case .name: return view.textContentType(.username)
         }
+        #else
+         return view
+        #endif
     }
 }
 
