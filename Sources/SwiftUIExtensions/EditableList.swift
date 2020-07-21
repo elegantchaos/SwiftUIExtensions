@@ -3,6 +3,8 @@
 //  All code (c) 2020 - present day, Elegant Chaos Limited.
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
+#if !os(tvOS)
+
 import SwiftUI
 
 // TODO: EditContext should really be paramterised with the Identifiable type, rather than hard-coding UUID.
@@ -119,3 +121,4 @@ public struct EditableList<ID, Content, Model>: View where ID == Model.Items.Ele
     }
 }
 
+#endif
