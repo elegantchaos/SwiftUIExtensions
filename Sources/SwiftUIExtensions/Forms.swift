@@ -20,14 +20,18 @@ extension View {
 }
 
 public class FormStyle: ObservableObject {
-    let headerFont: Font
-    let footerFont: Font
-    let labelFont: Font
+    public let headerFont: Font
+    public let footerFont: Font
+    public let labelFont: Font
+    public let contentFont: Font
+    public let rowPadding: CGFloat
     
-    public init(headerFont: Font = .headline, footerFont: Font = .footnote, labelFont: Font = .body) {
+    public init(headerFont: Font = .headline, footerFont: Font = .body, labelFont: Font = .body, contentFont: Font = .body, rowPadding: CGFloat = 4.0) {
         self.headerFont = headerFont
         self.footerFont = footerFont
         self.labelFont = labelFont
+        self.contentFont = contentFont
+        self.rowPadding = rowPadding
     }
 }
 
@@ -57,6 +61,8 @@ public struct FormSection<Content>: View where Content: View {
 }
 
 public struct FormRow<Content, Style>: View where Content: View, Style: ViewModifier {
+    @EnvironmentObject var formStyle: FormStyle
+
     let label: String
     let style: Style
     let alignment: VerticalAlignment
@@ -72,9 +78,17 @@ public struct FormRow<Content, Style>: View where Content: View, Style: ViewModi
     public var body: some View {
         HStack(alignment: alignment) {
             AlignedLabel(label)
+                .font(formStyle.labelFont)
             content()
+                .font(formStyle.contentFont)
                 .modifier(style)
         }
+    }
+}
+
+public extension FormRow where Style == ClearFormRowStyle {
+    init(label: String, alignment: VerticalAlignment = .center, @ViewBuilder content: @escaping () -> Content) {
+        self.init(label: label, alignment: alignment, style: ClearFormRowStyle(), content: content)
     }
 }
 
@@ -103,30 +117,37 @@ public struct FormPickerRow<Variable, Style>: View where Variable: Labelled, Sty
     }
 }
 
-public struct StyledFormFieldRow<Style>: View where Style: ViewModifier {
+public struct FormFieldRow<Style>: View where Style: ViewModifier {
     let label: String
-    let proto: String
+    let placeholder: String
     let variable: Binding<String>
     let clearButton: Bool
     let style: Style
     
-    public init(label: String, proto: String? = nil, variable: Binding<String>, style: Style, clearButton: Bool = false) {
+    public init(label: String, placeholder: String? = nil, variable: Binding<String>, style: Style, clearButton: Bool = false) {
         self.label = label
         self.variable = variable
         self.style = style
-        self.proto = proto ?? label
+        self.placeholder = placeholder ?? label
         self.clearButton = clearButton
     }
 
     public var body: some View {
         FormRow(label: label, style: style) {
             if clearButton {
-                TextField(proto, text: variable)
+                TextField(placeholder, text: variable)
                     .modifier(ClearButton(text: variable))
             } else {
-                TextField(proto, text: variable)
+                TextField(placeholder, text: variable)
             }
         }
+    }
+}
+
+public extension FormFieldRow where Style == DefaultFormFieldStyle {
+    // initialiser allowing you to miss out the style
+    init(label: String, placeholder: String? = nil, variable: Binding<String>, clearButton: Bool = false) {
+        self.init(label: label, placeholder: placeholder, variable: variable, style: DefaultFormFieldStyle(), clearButton: clearButton)
     }
 }
 
@@ -142,42 +163,35 @@ public struct FormToggleRow<Style>: View where Style: ViewModifier {
     }
     public var body: some View {
         FormRow(label: label, style: style) {
-            HStack {
-                Toggle("", isOn: variable)
-                    .labelsHidden()
-                    .background(Color.green)
-                Spacer()
-                    .frame(maxWidth: .infinity)
-                    .background(Color.blue)
-            }
-            .frame(maxWidth: .infinity)
-            .background(Color.red)
-
+            Toggle("", isOn: variable)
+                .labelsHidden()
         }
     }
 }
 
 public struct DefaultFormFieldStyle : ViewModifier {
-    public init(contentType: UITextContentType? = nil, autocapitalization: UITextAutocapitalizationType = .none, disableAutocorrection: Bool = true, keyboardType: UIKeyboardType = .default, clearButton: Bool = false) {
-        self.contentType = contentType
-        self.autocapitalization = autocapitalization
-        self.disableAutocorrection = disableAutocorrection
-        self.keyboardType = keyboardType
-    }
+    @EnvironmentObject var style: FormStyle
     
     let contentType: UITextContentType?
     let autocapitalization: UITextAutocapitalizationType
     let disableAutocorrection: Bool
     let keyboardType: UIKeyboardType
 
-    
+    public init(contentType: UITextContentType? = nil, autocapitalization: UITextAutocapitalizationType = .none, disableAutocorrection: Bool = true, keyboardType: UIKeyboardType = .default, clearButton: Bool = false) {
+        self.contentType = contentType
+        self.autocapitalization = autocapitalization
+        self.disableAutocorrection = disableAutocorrection
+        self.keyboardType = keyboardType
+    }
+
     public func body(content: Content) -> some View {
+
         content
             .textContentType(contentType)
             .autocapitalization(autocapitalization)
             .disableAutocorrection(disableAutocorrection)
             .keyboardType(keyboardType)
-            .padding(4.0)
+            .padding(style.rowPadding)
             .background(
                 RoundedRectangle(cornerRadius: 8.0)
                     .foregroundColor(Color(white: 0.3, opacity: 0.1))
@@ -186,11 +200,12 @@ public struct DefaultFormFieldStyle : ViewModifier {
 }
 
 public struct ClearFormRowStyle: ViewModifier {
+    @EnvironmentObject var style: FormStyle
     public init() {
     }
     
     public func body(content: Content) -> some View {
         content
-            .padding(4.0)
+            .padding(style.rowPadding)
     }
 }
