@@ -3,44 +3,45 @@
 //  All code (c) 2020 - present day, Elegant Chaos Limited.
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-/**
- Uses the geometry-reader & preferences method to align a bunch of labels
- in a container.
- */
-
 import SwiftUI
 
-/// Preference key which stores an array of label widths.
-fileprivate struct LabelWidthPreferenceKey: PreferenceKey {
-    public typealias Value = CGFloat
-    public static var defaultValue: CGFloat = 0
-    public static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        let next = nextValue()
-        if next > value {
-            value = next
-        }
+/// Uses the geometry-reader & preferences method to align a bunch of labels in a container.
+public struct AlignedLabelContainer<Content>: View where Content: View {
+    let content: () -> Content
+    @State private var labelWidth: CGFloat = 0
+    
+    public init(@ViewBuilder content: @escaping () -> Content) {
+        self.content = content
     }
-}
-
-/// View which captures its own width and stores it in a preference.
-fileprivate struct WidthReader: View {
+    
     public var body: some View {
-        GeometryReader { geometry in
-            Rectangle()
-                .fill(Color.clear)
-                .preference(
-                    key: LabelWidthPreferenceKey.self,
-                    value: geometry.frame(in: CoordinateSpace.global).width
-                )
-        }
+        content()
+            .onPreferenceChange(AlignedLabel.PrefKey.self) { newWidth in
+                labelWidth = newWidth
+            }
+            .environment(\.labelWidth, labelWidth)
     }
 }
 
 /// A single-line text view which is automatically sized
 /// to be as large as the largest label in the containing view.
-public struct Label: View {
+public struct AlignedLabel: View {
+    struct EnvKey: EnvironmentKey {
+        public static let defaultValue: CGFloat = 0
+    }
+
+    struct PrefKey: PreferenceKey {
+        public static var defaultValue: CGFloat = 0
+        public static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+            let next = nextValue()
+            if next > value {
+                value = next
+            }
+        }
+    }
+
     let name: String
-    @Environment(\.formLabelWidth) var width: CGFloat
+    @Environment(\.labelWidth) var width: CGFloat
     let alignment: Alignment
     let font: Font
     let bold: Bool
@@ -48,7 +49,7 @@ public struct Label: View {
     public var body: some View {
         let text = Text(name).font(font)
         let view = bold ? text.bold() : text
-        return view.background(WidthReader())
+        return view.background(WidthReader<AlignedLabel.PrefKey>())
             .lineLimit(1)
             .frame(width: width == 0 ? nil : width, alignment: alignment)
     }
@@ -61,13 +62,14 @@ public struct Label: View {
     }
 }
 
-public extension View {
-    /// Call this on the outer view containing all of the labels.
-    /// - Parameter width: a @State variable defined on the containing view, used to store the maximum label width.
-    /// - Returns: A view which automatically updates the binding when the label width preference is changed.
-    func alignLabels(width: Binding<CGFloat>) -> some View {
-        self.onPreferenceChange(LabelWidthPreferenceKey.self) { newWidth in
-            width.wrappedValue = newWidth
-        }.environment(\.formLabelWidth, width.wrappedValue)
+
+fileprivate extension EnvironmentValues {
+    var labelWidth: CGFloat {
+        get {
+            return self[AlignedLabel.EnvKey.self]
+        }
+        set {
+            self[AlignedLabel.EnvKey.self] = newValue
+        }
     }
 }

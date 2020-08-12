@@ -5,21 +5,6 @@
 
 import SwiftUI
 
-public struct FormLabelWidthKey: EnvironmentKey {
-    public static let defaultValue: CGFloat = 0
-}
-
-extension EnvironmentValues {
-    public var formLabelWidth: CGFloat {
-        get {
-            return self[FormLabelWidthKey.self]
-        }
-        set {
-            self[FormLabelWidthKey.self] = newValue
-        }
-    }
-}
-
 public protocol Labelled: Hashable {
     var label: String { get }
 }
@@ -33,6 +18,15 @@ extension View {
         }
     }
 }
+
+public class FormStyle: ObservableObject {
+    let headerFont: Font
+    
+    init(headerFont: Font) {
+        self.headerFont = headerFont
+    }
+}
+
 
 public struct FormSection<Content>: View where Content: View {
     let header: String
@@ -65,7 +59,7 @@ public struct FormRow<Content>: View where Content: View {
     
     public var body: some View {
         HStack {
-            Label(label)
+            AlignedLabel(label)
             content()
                 .padding(4.0)
                 .background(
