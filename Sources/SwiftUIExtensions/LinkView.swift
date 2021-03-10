@@ -12,16 +12,32 @@ public protocol AutoLinked: AutoLabelled, Identifiable where ItemView: View {
 
 public struct LinkView<Item>: View where Item: AutoLinked {
     let item: Item
+    let selection: Binding<Item.ID?>
     
-    public init(_ item: Item) {
+    public init(_ item: Item, selection: Binding<Item.ID?>) {
         self.item = item
+        self.selection = selection
     }
     
     public var body: some View {
-        NavigationLink(destination: item.linkView) {
+        NavigationLink(destination: item.linkView, tag: item.id, selection: selection) {
             LabelView(item)
         }
-        .tag(item.id)
+    }
+}
 
+public struct OLinkView<Item>: View where Item: AutoLinked, Item: ObservableObject {
+    @ObservedObject var item: Item
+    let selection: Binding<Item.ID?>
+    
+    public init(_ item: Item, selection: Binding<Item.ID?>) {
+        self.item = item
+        self.selection = selection
+    }
+    
+    public var body: some View {
+        NavigationLink(destination: item.linkView, tag: item.id, selection: selection) {
+            OLabelView(item)
+        }
     }
 }

@@ -21,3 +21,15 @@ public struct LabelView<Item>: View where Item: AutoLabelled {
         item.labelView
     }
 }
+
+public struct OLabelView<Item>: View where Item: AutoLabelled, Item: ObservableObject {
+    @ObservedObject var item: Item
+    
+    public init(_ item: Item) {
+        self.item = item
+    }
+    
+    public var body: some View {
+        item.labelView
+    }
+}
