@@ -11,7 +11,7 @@ public protocol Labelled: Hashable {
 
 extension View {
     func setPickerStyle() -> some View {
-        if #available(iOS 14, *) {
+        if #available(iOS 14, macOS 11.0, *) {
             return AnyView(self.pickerStyle(MenuPickerStyle()))
         } else {
             return AnyView(self.pickerStyle(DefaultPickerStyle()))
@@ -144,12 +144,6 @@ public struct FormFieldRow<Style>: View where Style: ViewModifier {
     }
 }
 
-public extension FormFieldRow where Style == DefaultFormFieldStyle {
-    // initialiser allowing you to miss out the style
-    init(label: String, placeholder: String? = nil, variable: Binding<String>, clearButton: Bool = false) {
-        self.init(label: label, placeholder: placeholder, variable: variable, style: DefaultFormFieldStyle(), clearButton: clearButton)
-    }
-}
 
 public struct FormToggleRow<Style>: View where Style: ViewModifier {
     let label: String
@@ -169,7 +163,16 @@ public struct FormToggleRow<Style>: View where Style: ViewModifier {
     }
 }
 
-public struct DefaultFormFieldStyle : ViewModifier {
+#if canImport(UIKit)
+
+@available(macOS 11.0, *) public extension FormFieldRow where Style == DefaultFormFieldStyle {
+    // initialiser allowing you to miss out the style
+    init(label: String, placeholder: String? = nil, variable: Binding<String>, clearButton: Bool = false) {
+        self.init(label: label, placeholder: placeholder, variable: variable, style: DefaultFormFieldStyle(), clearButton: clearButton)
+    }
+}
+
+@available(macOS 11.0, *) public struct DefaultFormFieldStyle : ViewModifier {
     @EnvironmentObject var style: FormStyle
     
     let contentType: UITextContentType?
@@ -198,6 +201,8 @@ public struct DefaultFormFieldStyle : ViewModifier {
             )
     }
 }
+
+#endif
 
 public struct ClearFormRowStyle: ViewModifier {
     @EnvironmentObject var style: FormStyle
