@@ -11,11 +11,13 @@ public protocol Labelled: Hashable {
 
 extension View {
     func setPickerStyle() -> some View {
-        if #available(iOS 14, macOS 11.0, *) {
+        #if !os(tvOS)
+        if #available(iOS 14, macOS 11.0, tvOS 14, *) {
             return AnyView(self.pickerStyle(MenuPickerStyle()))
-        } else {
-            return AnyView(self.pickerStyle(DefaultPickerStyle()))
         }
+        #endif
+        
+        return AnyView(self.pickerStyle(DefaultPickerStyle()))
     }
 }
 

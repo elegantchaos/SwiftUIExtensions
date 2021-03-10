@@ -4,7 +4,7 @@
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
-#if !os(tvOS) && canImport(UIKit)
+#if canImport(UIKit)
 import SwiftUI
 import UIKit
 
