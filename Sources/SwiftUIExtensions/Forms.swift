@@ -9,15 +9,19 @@ public protocol Labelled: Hashable {
     var label: String { get }
 }
 
-extension View {
-    func setPickerStyle() -> some View {
-        #if !os(tvOS)
-        if #available(iOS 14, macOS 11.0, tvOS 14, *) {
-            return AnyView(self.pickerStyle(MenuPickerStyle()))
-        }
+@available(iOS 14, macOS 11.0, tvOS 14, *) public extension View {
+    func bestFormPickerStyle() -> some View {
+        #if targetEnvironment(macCatalyst)
+                return self
+                    .labelsHidden()
+                    .pickerStyle(MenuPickerStyle())
+        #elseif !os(tvOS)
+            return self
+                .pickerStyle(MenuPickerStyle())
+        #else
+            return self
+                .pickerStyle(InlinePickerStyle())
         #endif
-        
-        return AnyView(self.pickerStyle(DefaultPickerStyle()))
     }
 }
 
@@ -38,26 +42,61 @@ public class FormStyle: ObservableObject {
 }
 
 
-public struct FormSection<Content>: View where Content: View {
+public struct FormSection<Header,Footer,Content>: View where Content: View, Header: View, Footer: View {
     @EnvironmentObject var style: FormStyle
 
-    let header: String
-    let footer: String
+    let header: () -> Header
+    let footer: () -> Footer
     let content: () -> Content
-    
-    public init(header: String, footer: String, @ViewBuilder content: @escaping () -> Content) {
+
+    public init(@ViewBuilder header: @escaping () -> Header, @ViewBuilder footer: @escaping () -> Footer, @ViewBuilder content: @escaping () -> Content) {
         self.header = header
         self.footer = footer
+        self.content = content
+    }
+
+    public init(header: String, footer: String, @ViewBuilder content: @escaping () -> Content) where Header == Text, Footer == FormDefaultFooter {
+        self.header = { return Text(header) }
+        self.footer = { return FormDefaultFooter(text: footer) }
         self.content = content
     }
     
     public var body: some View {
         Section(
-            header: Text(header).font(style.headerFont),
-            footer: Text(footer).font(style.footerFont)
-                .padding(.bottom, 20)
-        ) {
-            content()
+            header:
+                header()
+                .font(style.headerFont),
+            
+            footer:
+                footer()
+                .font(style.footerFont),
+            
+            content: content
+        )
+    }
+}
+
+public struct FormDefaultHeader: View {
+    @EnvironmentObject var style: FormStyle
+
+    let text: String
+    
+    public var body: some View {
+        Text(text)
+            .font(style.headerFont)
+    }
+}
+
+public struct FormDefaultFooter: View {
+    @EnvironmentObject var style: FormStyle
+
+    let text: String
+    
+    public var body: some View {
+        HStack {
+            Spacer()
+            Text(text)
+            .multilineTextAlignment(.trailing)
         }
     }
 }
@@ -70,7 +109,7 @@ public struct FormRow<Content, Style>: View where Content: View, Style: ViewModi
     let alignment: VerticalAlignment
     let content: () -> Content
     
-    public init(label: String, alignment: VerticalAlignment = .center, style: Style, @ViewBuilder content: @escaping () -> Content) {
+    public init(label: String, alignment: VerticalAlignment = .firstTextBaseline, style: Style, @ViewBuilder content: @escaping () -> Content) {
         self.label = label
         self.style = style
         self.alignment = alignment
@@ -114,7 +153,6 @@ public struct FormPickerRow<Variable, Style>: View where Variable: Labelled, Sty
                     Text(rate.label)
                 }
             }
-            .setPickerStyle()
         }
     }
 }
@@ -138,9 +176,11 @@ public struct FormFieldRow<Style>: View where Style: ViewModifier {
         FormRow(label: label, style: style) {
             if clearButton {
                 TextField(placeholder, text: variable)
+                    .modifier(style)
                     .modifier(ClearButton(text: variable))
             } else {
                 TextField(placeholder, text: variable)
+                    .modifier(style)
             }
         }
     }
@@ -182,7 +222,7 @@ public struct FormToggleRow<Style>: View where Style: ViewModifier {
     let disableAutocorrection: Bool
     let keyboardType: UIKeyboardType
 
-    public init(contentType: UITextContentType? = nil, autocapitalization: UITextAutocapitalizationType = .none, disableAutocorrection: Bool = true, keyboardType: UIKeyboardType = .default, clearButton: Bool = false) {
+    public init(contentType: UITextContentType? = nil, autocapitalization: UITextAutocapitalizationType = .none, disableAutocorrection: Bool = true, keyboardType: UIKeyboardType = .default) {
         self.contentType = contentType
         self.autocapitalization = autocapitalization
         self.disableAutocorrection = disableAutocorrection
@@ -197,10 +237,7 @@ public struct FormToggleRow<Style>: View where Style: ViewModifier {
             .disableAutocorrection(disableAutocorrection)
             .keyboardType(keyboardType)
             .padding(style.rowPadding)
-            .background(
-                RoundedRectangle(cornerRadius: 8.0)
-                    .foregroundColor(Color(white: 0.3, opacity: 0.1))
-            )
+            .textFieldStyle(RoundedBorderTextFieldStyle())
     }
 }
 
