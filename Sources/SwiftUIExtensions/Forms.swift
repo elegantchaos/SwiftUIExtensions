@@ -27,18 +27,32 @@ public protocol Labelled: Hashable {
 
 public class FormStyle: ObservableObject {
     public let headerFont: Font
-    public let footerFont: Font
-    public let labelFont: Font
-    public let contentFont: Font
-    public let rowPadding: CGFloat
-    
-    public init(headerFont: Font = .headline, footerFont: Font = .body, labelFont: Font = .body, contentFont: Font = .body, rowPadding: CGFloat = 4.0) {
-        self.headerFont = headerFont
-        self.footerFont = footerFont
-        self.labelFont = labelFont
-        self.contentFont = contentFont
-        self.rowPadding = rowPadding
-    }
+     public let headerOpacity: Double
+     public let footerFont: Font
+     public let footerOpacity: Double
+     public let labelFont: Font
+     public let labelOpacity: Double
+     public let contentFont: Font
+     public let contentOpacity: Double
+     public let rowPadding: CGFloat
+   
+    public init(
+         headerFont: Font = .headline, headerOpacity: Double = 1.0,
+         footerFont: Font = .body, footerOpacity: Double = 1.0,
+         labelFont: Font = .body, labelOpacity: Double = 0.8,
+         contentFont: Font = .body, contentOpacity: Double = 1.0,
+         rowPadding: CGFloat = 4.0
+    ) {
+         self.headerFont = headerFont
+         self.headerOpacity = headerOpacity
+         self.footerFont = footerFont
+         self.footerOpacity = footerOpacity
+         self.labelFont = labelFont
+         self.labelOpacity = labelOpacity
+         self.contentFont = contentFont
+         self.contentOpacity = contentOpacity
+         self.rowPadding = rowPadding
+     }
 }
 
 
@@ -157,6 +171,15 @@ public struct FormPickerRow<Variable, Style>: View where Variable: Labelled, Sty
     }
 }
 
+extension FormPickerRow where Style == ClearFormRowStyle {
+    public init(label: String, variable: Binding<Variable>, cases: [Variable]) {
+        self.label = label
+        self.variable = variable
+        self.cases = cases
+        self.style = ClearFormRowStyle()
+    }
+
+}
 public struct FormFieldRow<Style>: View where Style: ViewModifier {
     let label: String
     let placeholder: String
@@ -202,6 +225,14 @@ public struct FormToggleRow<Style>: View where Style: ViewModifier {
             Toggle("", isOn: variable)
                 .labelsHidden()
         }
+    }
+}
+
+extension FormToggleRow where Style == ClearFormRowStyle {
+    public init(label: String, variable: Binding<Bool>) {
+        self.label = label
+        self.variable = variable
+        self.style = ClearFormRowStyle()
     }
 }
 
