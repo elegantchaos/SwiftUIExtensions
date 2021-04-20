@@ -5,10 +5,14 @@
 
 import SwiftUI
 
-struct ClearButton: ViewModifier
+public struct ClearButton: ViewModifier
 {
     @Binding var text: String
 
+    public init(text: Binding<String>) {
+        self._text = text
+    }
+    
     public func body(content: Content) -> some View
     {
         ZStack(alignment: .trailing)

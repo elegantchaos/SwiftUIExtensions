@@ -35,7 +35,7 @@ public class FormStyle: ObservableObject {
      public let contentFont: Font
      public let contentOpacity: Double
      public let rowPadding: CGFloat
-   
+
     public init(
          headerFont: Font = .headline, headerOpacity: Double = 1.0,
          footerFont: Font = .body, footerOpacity: Double = 1.0,
@@ -74,17 +74,17 @@ public struct FormSection<Header,Footer,Content>: View where Content: View, Head
         self.footer = { return FormDefaultFooter(text: footer) }
         self.content = content
     }
-    
+
     public var body: some View {
         Section(
             header:
                 header()
                 .font(style.headerFont),
-            
+
             footer:
                 footer()
                 .font(style.footerFont),
-            
+
             content: content
         )
     }
@@ -94,7 +94,7 @@ public struct FormDefaultHeader: View {
     @EnvironmentObject var style: FormStyle
 
     let text: String
-    
+
     public var body: some View {
         Text(text)
             .font(style.headerFont)
@@ -105,7 +105,7 @@ public struct FormDefaultFooter: View {
     @EnvironmentObject var style: FormStyle
 
     let text: String
-    
+
     public var body: some View {
         HStack {
             Spacer()
@@ -122,7 +122,7 @@ public struct FormRow<Content, Style>: View where Content: View, Style: ViewModi
     let style: Style
     let alignment: VerticalAlignment
     let content: () -> Content
-    
+
     public init(label: String, alignment: VerticalAlignment = .firstTextBaseline, style: Style, @ViewBuilder content: @escaping () -> Content) {
         self.label = label
         self.style = style
@@ -152,14 +152,14 @@ public struct FormPickerRow<Variable, Style>: View where Variable: Labelled, Sty
     let variable: Binding<Variable>
     let cases: [Variable]
     let style: Style
-    
+
     public init(label: String, variable: Binding<Variable>, cases: [Variable], style: Style) {
         self.label = label
         self.variable = variable
         self.cases = cases
         self.style = style
     }
-    
+
     public var body: some View {
         return FormRow(label: label, style: style) {
             Picker(variable.wrappedValue.label, selection: variable) {
@@ -186,7 +186,7 @@ public struct FormFieldRow<Style>: View where Style: ViewModifier {
     let variable: Binding<String>
     let clearButton: Bool
     let style: Style
-    
+
     public init(label: String, placeholder: String? = nil, variable: Binding<String>, style: Style, clearButton: Bool = false) {
         self.label = label
         self.variable = variable
@@ -214,7 +214,7 @@ public struct FormToggleRow<Style>: View where Style: ViewModifier {
     let label: String
     let variable: Binding<Bool>
     let style: Style
-    
+
     public init(label: String, variable: Binding<Bool>, style: Style) {
         self.label = label
         self.variable = variable
@@ -237,17 +237,23 @@ extension FormToggleRow where Style == ClearFormRowStyle {
 }
 
 #if canImport(UIKit)
+//
+//@available(macOS 11.0, *) public extension FormFieldRow where Form == DefaultFormFieldStyle {
+//    // initialiser allowing you to miss out the style
+//    init(label: String, placeholder: String? = nil, variable: Binding<String>, clearButton: Bool = false) {
+//        self.init(label: label, placeholder: placeholder, variable: variable, form: DefaultFormFieldStyle(), clearButton: clearButton)
+//    }
+//}
 
-@available(macOS 11.0, *) public extension FormFieldRow where Style == DefaultFormFieldStyle {
-    // initialiser allowing you to miss out the style
-    init(label: String, placeholder: String? = nil, variable: Binding<String>, clearButton: Bool = false) {
-        self.init(label: label, placeholder: placeholder, variable: variable, style: DefaultFormFieldStyle(), clearButton: clearButton)
-    }
-}
+#if os(tvOS)
+typealias DefaultFormFieldTextStyle = DefaultTextFieldStyle
+#else
+typealias DefaultFormFieldTextStyle = RoundedBorderTextFieldStyle
+#endif
 
 @available(macOS 11.0, *) public struct DefaultFormFieldStyle : ViewModifier {
-    @EnvironmentObject var style: FormStyle
-    
+    @EnvironmentObject var form: FormStyle
+
     let contentType: UITextContentType?
     let autocapitalization: UITextAutocapitalizationType
     let disableAutocorrection: Bool
@@ -267,8 +273,8 @@ extension FormToggleRow where Style == ClearFormRowStyle {
             .autocapitalization(autocapitalization)
             .disableAutocorrection(disableAutocorrection)
             .keyboardType(keyboardType)
-            .padding(style.rowPadding)
-            .textFieldStyle(RoundedBorderTextFieldStyle())
+            .padding(form.rowPadding)
+            .textFieldStyle(DefaultFormFieldTextStyle())
     }
 }
 
@@ -278,7 +284,7 @@ public struct ClearFormRowStyle: ViewModifier {
     @EnvironmentObject var style: FormStyle
     public init() {
     }
-    
+
     public func body(content: Content) -> some View {
         content
             .padding(style.rowPadding)
