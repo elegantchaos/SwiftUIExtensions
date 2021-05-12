@@ -8,13 +8,15 @@ import SwiftUI
 #if !os(tvOS) && canImport(UIKit)
 
 public struct UIKitShim<Content> where Content: View {
+    public typealias RoundedBorderTextFieldStyle = SwiftUI.RoundedBorderTextFieldStyle
+
     let view: Content
     
     public func onTapGesture(perform action: @escaping () -> Void) -> some View {
         return view.onTapGesture(perform: action)
     }
     
-    public func contextMenu<MenuItems>(menuItems: () -> MenuItems) -> some View where MenuItems : View {
+    public func contextMenu<MenuItems>(@ViewBuilder menuItems: () -> MenuItems) -> some View where MenuItems : View {
         return view.contextMenu(menuItems: menuItems)
     }
     
@@ -22,6 +24,15 @@ public struct UIKitShim<Content> where Content: View {
             view.textContentType(textContentType)
     }
 
+    @available(iOS 14.0, *) public func defaultShortcut() -> some View {
+        view
+            .keyboardShortcut(.defaultAction)
+    }
+    
+    @available(iOS 14.0, *) public func cancelShortcut() -> some View {
+        view
+            .keyboardShortcut(.cancelAction)
+    }
 }
 
 public typealias EditModeShim = EditMode

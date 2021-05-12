@@ -5,20 +5,22 @@
 
 import SwiftUI
 
-// The shim provides placeholders for methods that don't exist on some platforms.
-// These call on to the real methods when they exist, but do something
-// safe (or sometimes, nothing) when they don't.
+// The shim provides placeholders for methods and types that don't exist on some platforms.
+// These use the real methods/types when they exist,
+// but default to something safe when they don't.
 //
-// To use, make the normal call, but via the shim object.
+// To use, use the normal method/type, but via the shim object/type.
 // For example, instead of `view.onTapGesture`, call `view.shim.onTapGesture`.
 // This will do the right thing on iOS, but nothing on tvOS.
 
 public extension View {
     #if os(tvOS)
-    var shim: TVOSShim<Self> { TVOSShim(view: self) }
+    typealias Shim = TVOSShim<Self>
     #elseif canImport(UIKit)
-    var shim: UIKitShim<Self> { UIKitShim(view: self) }
+    typealias Shim = UIKitShim<Self>
     #else
-    var shim: MacOSShim<Self> { MacOSShim(view: self) }
+    typealias Shim = MacOSShim<Self>
     #endif
+    
+    var shim: Shim { Shim(view: self) }
 }
