@@ -8,7 +8,8 @@ import SwiftUI
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, *) public extension Text {
     static let defaultImagePattern = try! NSRegularExpression(pattern: "\\<(.*)\\>", options: [])
 
-    static func text(insertingImagesIn string: String, pattern: NSRegularExpression = defaultImagePattern) -> Text {
+    static func text(insertingImagesIn string: String, pattern: NSRegularExpression = defaultImagePattern, baselineOffset: CGFloat = -4.0) -> Text {
+        
         let matches = pattern.matches(in: string, options: [], range: NSRange(location: 0, length: string.count))
         if matches.count == 0 {
             return Text(string)
@@ -24,7 +25,7 @@ import SwiftUI
                 let from2 = string.index(string.startIndex, offsetBy: range2.location)
                 let to2 = string.index(from2, offsetBy: range2.length)
                 let fragment = String(string[position..<from2])
-                buffer = buffer + Text(fragment) + Text(Image(name))
+                buffer = buffer + Text(fragment) + Text(Image(name)).baselineOffset(baselineOffset)
                 position = to2
             }
             buffer = buffer + Text(string[position...])
